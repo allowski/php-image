@@ -1,4 +1,4 @@
-FROM php:7.2-apache
+FROM php:8.0-apache
 
 RUN apt-get update && apt-get install -y locales && rm -rf /var/lib/apt/lists/* \
     && localedef -i pt_BR -c -f UTF-8 -A /usr/share/locale/locale.alias pt_BR.UTF-8
