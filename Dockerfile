@@ -6,9 +6,8 @@ ENV LANG pt_BR.UTF-8
 
 RUN apt update
 RUN apt upgrade -y
-RUN apt update && apt install -y zip unzip curl wget zlib
-RUN apt install -y imagemagick
-RUN docker-php-ext-install gd 
+RUN apt update && apt install -y zip unzip curl wget
+RUN apt install -y imagemagick zlib1g
 
 RUN apt install -y libcurl4
 RUN apt install -y libmcrypt-dev
@@ -26,6 +25,9 @@ RUN wkhtmltopdf --version
 RUN apt-get install -y libpq-dev \
     && docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql \
     && docker-php-ext-install pdo pdo_pgsql pgsql
+ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
+RUN chmod +x /usr/local/bin/install-php-extensions && sync && \
+    install-php-extensions gd xdebug
 
 RUN a2enmod rewrite
 
