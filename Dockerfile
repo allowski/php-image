@@ -8,6 +8,7 @@ RUN apt update
 RUN apt upgrade -y
 RUN apt update && apt install -y zip unzip curl wget
 RUN apt install -y imagemagick
+RUN docker-php-ext-install gd 
 
 RUN apt install -y libcurl4
 RUN apt install -y libmcrypt-dev
