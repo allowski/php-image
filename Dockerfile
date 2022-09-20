@@ -25,7 +25,7 @@ RUN wkhtmltopdf --version
 # Install Postgre PDO
 RUN apt-get install -y libpq-dev \
     && docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql \
-    && docker-php-ext-install pdo pdo_pgsql pgsql zip pt pthreads
+    && docker-php-ext-install pdo pdo_pgsql pgsql zip
 ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
 RUN chmod +x /usr/local/bin/install-php-extensions && sync && \
     install-php-extensions gd xdebug pthreads
