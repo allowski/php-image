@@ -7,7 +7,7 @@ ENV LANG pt_BR.UTF-8
 RUN apt update
 RUN apt upgrade -y
 RUN apt update && apt install -y zip unzip curl wget
-RUN apt install -y imagemagick zlib1g libcurl4 libmcrypt-dev libicu-dev libldb-dev libldap2-dev libxml2-dev libssl-devy libzip-dev
+RUN apt install -y imagemagick zlib1g libcurl4 libmcrypt-dev libicu-dev libldb-dev libldap2-dev libxml2-dev libssl-dev libzip-dev
 
 RUN wget https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.3/wkhtmltox-0.12.3_linux-generic-amd64.tar.xz && tar vxf wkhtmltox-0.12.3_linux-generic-amd64.tar.xz && cp wkhtmltox/bin/wk* /usr/local/bin/
 
