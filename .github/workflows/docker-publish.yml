@@ -15,3 +15,10 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
           repository: allowski/php-image
           tag_with_ref: true
+      - name: Smoke test Chrome headless PDF generation
+        run: |
+          docker run --rm allowski/php-image:latest bash -c '
+            echo "<h1>smoke test</h1>" > /tmp/t.html
+            google-chrome-stable --headless --disable-gpu --no-sandbox --print-to-pdf=/tmp/out.pdf /tmp/t.html
+            head -c 5 /tmp/out.pdf | grep -q "%PDF-" && echo "OK: valid PDF generated"
+          '
