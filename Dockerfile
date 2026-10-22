@@ -1,9 +1,10 @@
 FROM php:8.2-apache
-
+# Run update
 RUN apt-get update && apt-get install -y locales && rm -rf /var/lib/apt/lists/* \
     && localedef -i pt_BR -c -f UTF-8 -A /usr/share/locale/locale.alias pt_BR.UTF-8
 ENV LANG pt_BR.UTF-8
 
+# Install stuff
 RUN apt update
 RUN apt upgrade -y
 RUN apt update && apt install -y zip unzip curl wget gnupg
