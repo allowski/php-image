@@ -34,6 +34,6 @@ jobs:
             curl -s -D - -o /dev/null http://127.0.0.1/ | grep -qi "^X-Content-Type-Options: nosniff" && echo "OK: nosniff header"
             [ "$(curl -s -o /dev/null -w %{http_code} http://127.0.0.1/.env)" = 403 ] && echo "OK: dotfiles denied"
             [ "$(curl -s -o /dev/null -w %{http_code} -X TRACE http://127.0.0.1/)" = 405 ] && echo "OK: TRACE disabled"
-            head -c 22000000 /dev/zero > /tmp/big.bin
-            [ "$(curl -s -o /dev/null -w %{http_code} -F f=@/tmp/big.bin http://127.0.0.1/index.php)" = 413 ] && echo "OK: 22 MB upload rejected"
+            head -c 42000000 /dev/zero > /tmp/big.bin
+            [ "$(curl -s -o /dev/null -w %{http_code} -F f=@/tmp/big.bin http://127.0.0.1/index.php)" = 413 ] && echo "OK: 42 MB upload rejected"
           '

@@ -10,7 +10,7 @@ hardening config (`config/apache/hardening.conf`). Highlights:
 
 | Area | Setting |
 | --- | --- |
-| Uploads | `upload_max_filesize = 20M`, `post_max_size = 20M`, `max_file_uploads = 10`, Apache `LimitRequestBody 20971520` |
+| Uploads | `upload_max_filesize = 40M`, `post_max_size = 40M`, `max_file_uploads = 10`, Apache `LimitRequestBody 41943040` |
 | Upload progress | `session.upload_progress.enabled = Off` |
 | Info disclosure | `expose_php = Off`, `display_errors = Off`, `log_errors = On`, `ServerTokens Prod`, `ServerSignature Off`, `X-Powered-By` stripped |
 | Code execution | `allow_url_include = Off`, `enable_dl = Off`, `disable_functions = passthru,shell_exec,system,popen,pcntl_exec,show_source,highlight_file` (`exec`/`proc_open` kept for snappdf / Laravel Process / Composer) |
@@ -29,7 +29,7 @@ override any directive without replacing the whole file:
 
 ```Dockerfile
 FROM allowski/php-image:latest
-RUN printf 'upload_max_filesize = 50M\npost_max_size = 50M\n' > "$PHP_INI_DIR/conf.d/zz-app.ini"
+RUN printf 'upload_max_filesize = 64M\npost_max_size = 64M\n' > "$PHP_INI_DIR/conf.d/zz-app.ini"
 ```
 
 Enable Xdebug for local development at run time (no rebuild needed):

@@ -46,7 +46,7 @@ RUN apt-get autoremove
 # override single directives by adding a file to $PHP_INI_DIR/conf.d/.
 COPY config/php/php.ini $PHP_INI_DIR/php.ini
 
-# Apache: hide version info, disable TRACE, cap request bodies at 20 MiB,
+# Apache: hide version info, disable TRACE, cap request bodies at 40 MiB,
 # refuse dotfiles / secrets, no directory listings, nosniff header.
 COPY config/apache/hardening.conf /etc/apache2/conf-available/hardening.conf
 RUN sed -i -e 's/^ServerTokens .*/ServerTokens Prod/' \
