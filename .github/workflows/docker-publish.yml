@@ -8,6 +8,47 @@ jobs:
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
+      # Build once locally and test that exact image before anything is
+      # published. (The publish step below tags branch builds with the branch
+      # name, so testing ":latest" would silently exercise the previous image.)
+      - name: Build image for testing
+        run: docker build -t php-image:ci .
+      - name: Smoke test Chrome headless PDF generation
+        run: |
+          docker run --rm php-image:ci bash -c '
+            set -e
+            echo "<h1>smoke test</h1>" > /tmp/t.html
+            google-chrome-stable --headless --disable-gpu --no-sandbox --print-to-pdf=/tmp/out.pdf /tmp/t.html
+            head -c 5 /tmp/out.pdf | grep -q "%PDF-" || { echo "FAIL: no PDF generated"; exit 1; }
+            echo "OK: valid PDF generated"
+          '
+      - name: Verify PHP/Apache security hardening
+        run: |
+          docker run --rm php-image:ci php-hardening-check
+          docker run --rm php-image:ci bash -c '
+            set -e
+            fail() { echo "FAIL: $1"; exit 1; }
+            status() { curl -s -o /dev/null -w "%{http_code}" "$@"; }
+            apache2ctl -t 2>/dev/null
+            echo "<?php echo \"ok\"; ?>" > /var/www/html/index.php
+            echo "SECRET=1" > /var/www/html/.env
+            (apache2-foreground >/dev/null 2>&1 &) ; sleep 3
+            headers=$(curl -s -D - -o /dev/null http://127.0.0.1/ | tr -d "\r")
+            echo "$headers" | grep -q "^Server: Apache$"               || fail "server version not hidden: $(echo "$headers" | grep -i ^Server)"
+            echo "OK: server version hidden"
+            echo "$headers" | grep -qi "^X-Content-Type-Options: nosniff" || fail "nosniff header missing"
+            echo "OK: nosniff header"
+            [ "$(status http://127.0.0.1/.env)" = 403 ]                   || fail ".env not denied"
+            echo "OK: dotfiles denied"
+            [ "$(status -X TRACE http://127.0.0.1/)" = 405 ]             || fail "TRACE not disabled"
+            echo "OK: TRACE disabled"
+            head -c 39000000 /dev/zero > /tmp/ok.bin
+            [ "$(status -F f=@/tmp/ok.bin http://127.0.0.1/index.php)" = 200 ]  || fail "39 MB upload not accepted"
+            echo "OK: 39 MB upload accepted"
+            head -c 42000000 /dev/zero > /tmp/big.bin
+            [ "$(status -F f=@/tmp/big.bin http://127.0.0.1/index.php)" = 413 ] || fail "42 MB upload not rejected"
+            echo "OK: 42 MB upload rejected"
+          '
       - name: Push to Docker Hub
         uses: docker/build-push-action@v1
         with:
@@ -15,10 +56,3 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
           repository: allowski/php-image
           tag_with_ref: true
-      - name: Smoke test Chrome headless PDF generation
-        run: |
-          docker run --rm allowski/php-image:latest bash -c '
-            echo "<h1>smoke test</h1>" > /tmp/t.html
-            google-chrome-stable --headless --disable-gpu --no-sandbox --print-to-pdf=/tmp/out.pdf /tmp/t.html
-            head -c 5 /tmp/out.pdf | grep -q "%PDF-" && echo "OK: valid PDF generated"
-          '

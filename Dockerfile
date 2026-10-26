@@ -38,3 +38,24 @@ RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | gpg --dearm
 ENV SNAPPDF_EXECUTABLE_PATH=/usr/bin/google-chrome-stable
 
 RUN apt-get autoremove
+
+# --- Security hardening -------------------------------------------------------
+# Hardened php.ini (no php.ini existed before, so PHP ran on its built-in
+# defaults: display_errors=On, expose_php=On, upload progress on, xdebug in
+# develop mode). conf.d/*.ini is parsed after php.ini, so downstream images
+# override single directives by adding a file to $PHP_INI_DIR/conf.d/.
+COPY config/php/php.ini $PHP_INI_DIR/php.ini
+
+# Apache: hide version info, disable TRACE, cap request bodies at 40 MiB,
+# refuse dotfiles / secrets, no directory listings, nosniff header.
+COPY config/apache/hardening.conf /etc/apache2/conf-available/hardening.conf
+RUN sed -i -e 's/^ServerTokens .*/ServerTokens Prod/' \
+           -e 's/^ServerSignature .*/ServerSignature Off/' \
+           /etc/apache2/conf-available/security.conf \
+    && a2enmod headers \
+    && a2enconf hardening \
+    && apache2ctl -t
+
+# Self-check (also used by CI): fail the build if the hardening did not take effect.
+COPY config/php/hardening-check.php /usr/local/bin/php-hardening-check
+RUN chmod +x /usr/local/bin/php-hardening-check && php-hardening-check
