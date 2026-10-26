@@ -22,3 +22,18 @@ jobs:
             google-chrome-stable --headless --disable-gpu --no-sandbox --print-to-pdf=/tmp/out.pdf /tmp/t.html
             head -c 5 /tmp/out.pdf | grep -q "%PDF-" && echo "OK: valid PDF generated"
           '
+      - name: Verify PHP/Apache security hardening
+        run: |
+          docker run --rm allowski/php-image:latest php-hardening-check
+          docker run --rm allowski/php-image:latest bash -c '
+            apache2ctl -t 2>/dev/null
+            echo "<?php echo \"ok\"; ?>" > /var/www/html/index.php
+            echo "SECRET=1" > /var/www/html/.env
+            (apache2-foreground >/dev/null 2>&1 &) ; sleep 3
+            curl -s -D - -o /dev/null http://127.0.0.1/ | grep -q "^Server: Apache\r\?$" && echo "OK: server version hidden"
+            curl -s -D - -o /dev/null http://127.0.0.1/ | grep -qi "^X-Content-Type-Options: nosniff" && echo "OK: nosniff header"
+            [ "$(curl -s -o /dev/null -w %{http_code} http://127.0.0.1/.env)" = 403 ] && echo "OK: dotfiles denied"
+            [ "$(curl -s -o /dev/null -w %{http_code} -X TRACE http://127.0.0.1/)" = 405 ] && echo "OK: TRACE disabled"
+            head -c 22000000 /dev/zero > /tmp/big.bin
+            [ "$(curl -s -o /dev/null -w %{http_code} -F f=@/tmp/big.bin http://127.0.0.1/index.php)" = 413 ] && echo "OK: 22 MB upload rejected"
+          '
