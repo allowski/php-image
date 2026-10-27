@@ -56,3 +56,6 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
           repository: allowski/php-image
           tag_with_ref: true
+          # Besides the branch name (master -> latest, php-8.4 -> php-8.4), publish
+          # the PHP version so downstream Dockerfiles can pin FROM allowski/php-image:8.4.27
+          tags: 8.4,8.4.27
