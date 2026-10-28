@@ -1,6 +1,6 @@
 # smartpass-base-image
 
-PHP 8.2 + Apache (mod_php) base image with PostgreSQL PDO, GD, Zip, Composer,
+PHP 8.4 + Apache (mod_php) base image with PostgreSQL PDO, GD, Zip, Composer,
 Xdebug and Google Chrome (for `beganovich/snappdf`).
 
 ## Security hardening
